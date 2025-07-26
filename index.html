@@ -2,65 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Live Sheet Dashboard</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
-      width: 100%;
+      overflow: hidden;
       font-family: Arial, sans-serif;
-      background: #fff;
     }
-
     #login, #protected {
-      margin: 0;
-      padding: 10px;
       width: 100%;
-      max-width: none;
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
     }
-
     input, button {
-      margin: 5px 0;
+      margin: 6px;
       padding: 10px;
       font-size: 16px;
-      width: 100%;
-      box-sizing: border-box;
     }
-
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #0056b3;
-    }
-
-    .iframe-container {
-      width: 100vw;
-      height: 100vh;
-    }
-
-    .iframe-container iframe {
+    iframe {
       width: 100%;
       height: 100%;
       border: none;
-    }
-
-    h2 {
-      font-size: 18px;
-      text-align: center;
-      margin: 10px 0;
     }
   </style>
 </head>
 <body>
 
-<div id="login">
+<div id="login" style="display: none;">
   <h2>Client Login</h2>
   <input type="text" id="username" placeholder="Username" />
   <input type="password" id="password" placeholder="Password" />
@@ -68,13 +43,8 @@
   <p id="login-error" style="color:red;"></p>
 </div>
 
-<div id="protected" style="display:none;">
-  <h2>
-    Live BTC/ETH Support/Res. / See Multiple Expiry changes in 1 page for ↑️↓️ OI, Volume, 6Hr OI change data (1Min, 5Min, 15Min, 30Min etc.)
-  </h2>
-  <div class="iframe-container">
-    <iframe id="sheetFrame" allowfullscreen></iframe>
-  </div>
+<div id="protected" style="display: none;">
+  <iframe id="sheetFrame"></iframe>
 </div>
 
 <script>
@@ -84,22 +54,19 @@
     "planetimpex": "planet123"
   };
 
-  const baseSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false';
+  const baseSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false&chrome=false';
 
   function loadSheet() {
     const iframe = document.getElementById("sheetFrame");
-    iframe.style.opacity = 0.3;
-    iframe.src = baseSheetURL + '&t=' + new Date().getTime();
-    iframe.onload = () => {
-      iframe.style.opacity = 1;
-    };
+    iframe.src = baseSheetURL + '&t=' + new Date().getTime(); // cache-bust
   }
 
   function checkLogin() {
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
+    const user = document.getElementById("username").value.trim();
+    const pass = document.getElementById("password").value.trim();
     if (USERS[user] === pass) {
-      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("loggedIn", "yes");
+      localStorage.setItem("user", user);
       showProtected();
     } else {
       document.getElementById("login-error").innerText = "Invalid login";
@@ -109,15 +76,17 @@
   function showProtected() {
     document.getElementById("login").style.display = "none";
     document.getElementById("protected").style.display = "block";
-    loadSheet();
-    setInterval(loadSheet, 60000);
+    loadSheet(); // initial load
+    setInterval(loadSheet, 60000); // auto refresh every 60s
   }
 
-  window.onload = () => {
-    if (localStorage.getItem("isLoggedIn") === "true") {
+  window.onload = function () {
+    if (localStorage.getItem("loggedIn") === "yes") {
       showProtected();
+    } else {
+      document.getElementById("login").style.display = "flex";
     }
-  }
+  };
 </script>
 
 </body>
