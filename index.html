@@ -2,12 +2,9 @@
 <html>
 <head>
   <title>Live Sheet Dashboard</title>
-  <!-- ❌ Removed full page refresh to preserve login -->
   <style>
     body { font-family: Arial; padding: 20px; }
-    #login, #protected {
-      margin: 20px;
-    }
+    #login, #protected { margin: 20px; }
     input {
       margin: 5px;
       padding: 8px;
@@ -17,6 +14,11 @@
       padding: 8px 12px;
       font-size: 14px;
       cursor: pointer;
+    }
+    iframe {
+      border: 1px solid #ccc;
+      opacity: 1;
+      transition: opacity 0.4s;
     }
   </style>
 </head>
@@ -32,10 +34,8 @@
 
 <div id="protected" style="display:none;">
   <h2>Live BTC/ETH Support/Res./See Multiple Expiry changes in 1 page for ↑↓ OI,Volume,6Hr OI change data for 1Min,5Min,15Min,30Min etc.</h2>
-  <iframe id="sheetFrame" 
-          src="" 
-          width="100%" height="800px" frameborder="0" style="border: 1px solid #ccc;">
-  </iframe>
+  
+  <iframe id="sheetFrame" width="100%" height="800px"></iframe>
 </div>
 
 <script>
@@ -45,7 +45,18 @@
     "planetimpex": "planet123"
   };
 
-  const iframeURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false';
+  const baseSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false';
+
+  function loadSheet() {
+    const iframe = document.getElementById("sheetFrame");
+    iframe.style.opacity = 0.3; // Dim to show it's refreshing
+    setTimeout(() => {
+      iframe.src = baseSheetURL + '&t=' + new Date().getTime();
+      iframe.onload = () => {
+        iframe.style.opacity = 1; // Restore after load
+      };
+    }, 500); // Small delay to ensure smooth transition
+  }
 
   function checkLogin() {
     const user = document.getElementById("username").value;
@@ -53,12 +64,13 @@
     if (USERS[user] === pass) {
       document.getElementById("login").style.display = "none";
       document.getElementById("protected").style.display = "block";
-      document.getElementById("sheetFrame").src = iframeURL;
 
-      // ✅ Start refreshing the iframe every 60 seconds
+      loadSheet(); // initial load
+
+      // Refresh every 60s
       setInterval(() => {
-        document.getElementById("sheetFrame").src = iframeURL + '&t=' + new Date().getTime();
-      }, 60000); // 60,000 ms = 60 sec
+        loadSheet();
+      }, 60000);
     } else {
       document.getElementById("login-error").innerText = "Invalid login";
     }
