@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Live Sheet Dashboard</title>
-  <meta http-equiv="refresh" content="60"> <!-- Auto-refresh every 60 seconds -->
+  <!-- ❌ Removed full page refresh to preserve login -->
   <style>
     body { font-family: Arial; padding: 20px; }
     #login, #protected {
@@ -54,15 +54,15 @@
       document.getElementById("login").style.display = "none";
       document.getElementById("protected").style.display = "block";
       document.getElementById("sheetFrame").src = iframeURL;
+
+      // ✅ Start refreshing the iframe every 60 seconds
+      setInterval(() => {
+        document.getElementById("sheetFrame").src = iframeURL + '&t=' + new Date().getTime();
+      }, 60000); // 60,000 ms = 60 sec
     } else {
       document.getElementById("login-error").innerText = "Invalid login";
     }
   }
-
-  // OPTIONAL: Reload JavaScript-style as a fallback (every 60s)
-  setTimeout(() => {
-    location.reload();
-  }, 60000);
 </script>
 
 </body>
