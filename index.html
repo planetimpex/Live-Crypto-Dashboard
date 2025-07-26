@@ -31,6 +31,13 @@
       height: 100%;
       border: none;
     }
+    #bufferFrame {
+      display: none;
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+    }
   </style>
 </head>
 <body>
@@ -43,8 +50,9 @@
   <p id="login-error" style="color:red;"></p>
 </div>
 
-<div id="protected" style="display: none;">
+<div id="protected" style="display: none; position: relative;">
   <iframe id="sheetFrame"></iframe>
+  <iframe id="bufferFrame"></iframe>
 </div>
 
 <script>
@@ -57,8 +65,14 @@
   const baseSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false&chrome=false';
 
   function loadSheet() {
-    const iframe = document.getElementById("sheetFrame");
-    iframe.src = baseSheetURL + '&t=' + new Date().getTime(); // cache-bust
+    const mainFrame = document.getElementById("sheetFrame");
+    const buffer = document.getElementById("bufferFrame");
+
+    buffer.src = baseSheetURL + '&t=' + new Date().getTime(); // new iframe source
+    buffer.onload = () => {
+      // Once loaded, swap content
+      mainFrame.src = buffer.src;
+    };
   }
 
   function checkLogin() {
@@ -76,7 +90,8 @@
   function showProtected() {
     document.getElementById("login").style.display = "none";
     document.getElementById("protected").style.display = "block";
-    loadSheet(); // initial load
+    document.getElementById("sheetFrame").src = baseSheetURL;
+
     setInterval(loadSheet, 60000); // auto refresh every 60s
   }
 
