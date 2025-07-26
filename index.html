@@ -1,24 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Live Sheet Dashboard</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    #login, #protected { margin: 20px; }
-    input {
-      margin: 5px;
-      padding: 8px;
-      font-size: 14px;
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
     }
+
+    #login, #protected {
+      margin: 20px auto;
+      max-width: 600px;
+    }
+
+    input, button {
+      margin: 5px 0;
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
     button {
-      padding: 8px 12px;
-      font-size: 14px;
+      background-color: #007bff;
+      color: white;
+      border: none;
       cursor: pointer;
     }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
     iframe {
       border: 1px solid #ccc;
-      opacity: 1;
-      transition: opacity 0.4s;
+      width: 100%;
+      height: 100%;
+    }
+
+    .iframe-container {
+      position: relative;
+      width: 100%;
+      padding-bottom: 150%; /* Adjust based on how tall you want it */
+      height: 0;
+      overflow: hidden;
+    }
+
+    .iframe-container iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    @media screen and (max-width: 600px) {
+      h2 {
+        font-size: 18px;
+      }
     }
   </style>
 </head>
@@ -33,9 +73,13 @@
 </div>
 
 <div id="protected" style="display:none;">
-  <h2>Live BTC/ETH Support/Res./See Multiple Expiry changes in 1 page for ↑↓ OI,Volume,6Hr OI change data for 1Min,5Min,15Min,30Min etc.</h2>
-  
-  <iframe id="sheetFrame" width="100%" height="800px"></iframe>
+  <h2>
+    Live BTC/ETH Support/Res. / See Multiple Expiry changes in 1 page for ↑↓ OI, Volume, 6Hr OI change data (1Min, 5Min, 15Min, 30Min etc.)
+  </h2>
+
+  <div class="iframe-container">
+    <iframe id="sheetFrame" allowfullscreen></iframe>
+  </div>
 </div>
 
 <script>
@@ -49,13 +93,12 @@
 
   function loadSheet() {
     const iframe = document.getElementById("sheetFrame");
-    iframe.style.opacity = 0.3; // Dim to show it's refreshing
-    setTimeout(() => {
-      iframe.src = baseSheetURL + '&t=' + new Date().getTime();
-      iframe.onload = () => {
-        iframe.style.opacity = 1; // Restore after load
-      };
-    }, 500); // Small delay to ensure smooth transition
+    iframe.style.opacity = 0.3;
+    const newURL = baseSheetURL + '&t=' + new Date().getTime(); // prevent caching
+    iframe.src = newURL;
+    iframe.onload = () => {
+      iframe.style.opacity = 1;
+    };
   }
 
   function checkLogin() {
@@ -65,12 +108,8 @@
       document.getElementById("login").style.display = "none";
       document.getElementById("protected").style.display = "block";
 
-      loadSheet(); // initial load
-
-      // Refresh every 60s
-      setInterval(() => {
-        loadSheet();
-      }, 60000);
+      loadSheet(); // Initial load
+      setInterval(loadSheet, 60000); // Reload every 60 seconds
     } else {
       document.getElementById("login-error").innerText = "Invalid login";
     }
