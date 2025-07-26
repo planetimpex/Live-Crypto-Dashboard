@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Live Sheet Dashboard</title>
+  <meta http-equiv="refresh" content="60"> <!-- Auto-refresh every 60 seconds -->
   <style>
     body { font-family: Arial; padding: 20px; }
     #login, #protected {
@@ -30,7 +31,7 @@
 </div>
 
 <div id="protected" style="display:none;">
-  <h2>Live BTC/ETH Data : Support/Resistance/ Easy to find strikeprice where Data ↑↓ increase OI,Volume,6Hr OI change data for 1Min,5Min,15Min,30Min etc...for conclude Trade</h2>
+  <h2>Live BTC/ETH Support/Res./See Multiple Expiry changes in 1 page for ↑↓ OI,Volume,6Hr OI change data for 1Min,5Min,15Min,30Min etc.</h2>
   <iframe id="sheetFrame" 
           src="" 
           width="100%" height="800px" frameborder="0" style="border: 1px solid #ccc;">
@@ -39,8 +40,8 @@
 
 <script>
   const USERS = {
-    "client1": "pass123",
-    "client2": "demo456",
+    "client1": "indian123",
+    "client2": "indian321",
     "planetimpex": "planet123"
   };
 
@@ -57,6 +58,11 @@
       document.getElementById("login-error").innerText = "Invalid login";
     }
   }
+
+  // OPTIONAL: Reload JavaScript-style as a fallback (every 60s)
+  setTimeout(() => {
+    location.reload();
+  }, 60000);
 </script>
 
 </body>
