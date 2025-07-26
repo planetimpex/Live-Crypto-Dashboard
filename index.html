@@ -4,13 +4,18 @@
   <title>Live Sheet Dashboard</title>
   <style>
     body { font-family: Arial; padding: 20px; }
-    table, th, td {
-      border: 1px solid black;
-      border-collapse: collapse;
-      padding: 5px;
-    }
     #login, #protected {
       margin: 20px;
+    }
+    input {
+      margin: 5px;
+      padding: 8px;
+      font-size: 14px;
+    }
+    button {
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -26,7 +31,10 @@
 
 <div id="protected" style="display:none;">
   <h2>Live Google Sheet Data</h2>
-  <div id="data">Loading...</div>
+  <iframe id="sheetFrame" 
+          src="" 
+          width="100%" height="800px" frameborder="0" style="border: 1px solid #ccc;">
+  </iframe>
 </div>
 
 <script>
@@ -35,7 +43,7 @@
     "client2": "demo456"
   };
 
-  const sheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pub?output=csv';
+  const iframeURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false';
 
   function checkLogin() {
     const user = document.getElementById("username").value;
@@ -43,29 +51,10 @@
     if (USERS[user] === pass) {
       document.getElementById("login").style.display = "none";
       document.getElementById("protected").style.display = "block";
-      fetchSheet();
-      setInterval(fetchSheet, 60000); // refresh every 1 min
+      document.getElementById("sheetFrame").src = iframeURL;
     } else {
       document.getElementById("login-error").innerText = "Invalid login";
     }
-  }
-
-  function fetchSheet() {
-    fetch(sheetURL)
-      .then(res => res.text())
-      .then(data => {
-        const rows = data.trim().split('\n');
-        let html = '<table>';
-        rows.forEach(row => {
-          html += '<tr>';
-          row.split(',').forEach(cell => {
-            html += `<td>${cell}</td>`;
-          });
-          html += '</tr>';
-        });
-        html += '</table>';
-        document.getElementById('data').innerHTML = html;
-      });
   }
 </script>
 
