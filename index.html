@@ -36,6 +36,12 @@
       padding: 8px;
       text-align: left;
     }
+    #loading {
+      display: none;
+      font-size: 16px;
+      color: #555;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -50,6 +56,7 @@
 
 <div id="protected" style="display: none; flex-direction: column;">
   <h2>Live Google Sheet Data</h2>
+  <div id="loading">🔄 Refreshing data...</div>
   <table id="dataTable"></table>
 </div>
 
@@ -60,18 +67,25 @@
     "planetimpex": "planet123"
   };
 
-  const SHEET_ID = '1f7A3F5bNfPkulNBAnsKFluE_V-a23PG0wME_g3jyxhw';
-  const API_KEY = 'AIzaSyB2xucSsbf-bR6fUOfVIxjjBsk4hNtESL0'; // 🔁 Replace with your real API key
-  const RANGE = 'Sheet1!A1:Z100'; // Adjust as needed
+  const SHEET_ID = '1f7A3F5bNfPkulNBAnsKFluE_V-a23PG0wME_g3jyxhw'; // ✅ your actual sheet ID
+  const API_KEY = 'AIzaSyB2xucSsbf-bR6fUOfVIxjjBsk4hNtESL0'; // ✅ your actual API key
+  const RANGE = 'BTC!A1:Z100'; // ✅ adjust to your actual sheet tab and range
 
   function fetchSheetData() {
+    const loading = document.getElementById("loading");
+    loading.style.display = "block";
+
     const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+
     fetch(url)
       .then(response => response.json())
       .then(data => {
         const values = data.values || [];
-        const table = document.getElementById("dataTable");
-        table.innerHTML = '';
+        if (values.length === 0) return;
+
+        // Build new table in memory
+        const newTable = document.createElement("table");
+        newTable.id = "dataTable";
 
         values.forEach((row, rowIndex) => {
           const tr = document.createElement("tr");
@@ -80,11 +94,18 @@
             td.textContent = cell;
             tr.appendChild(td);
           });
-          table.appendChild(tr);
+          newTable.appendChild(tr);
         });
+
+        // Replace old table only after building new one
+        const oldTable = document.getElementById("dataTable");
+        oldTable.parentNode.replaceChild(newTable, oldTable);
       })
       .catch(err => {
         console.error("Error fetching sheet data:", err);
+      })
+      .finally(() => {
+        loading.style.display = "none";
       });
   }
 
@@ -103,8 +124,8 @@
   function showProtected() {
     document.getElementById("login").style.display = "none";
     document.getElementById("protected").style.display = "flex";
-    fetchSheetData(); // Load initially
-    setInterval(fetchSheetData, 60000); // Auto-refresh every 60s
+    fetchSheetData(); // Initial load
+    setInterval(fetchSheetData, 60000); // Refresh every 60 seconds
   }
 
   window.onload = function () {
