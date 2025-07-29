@@ -5,20 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Live Sheet Dashboard</title>
   <style>
-    html, body {
+    body {
       margin: 0;
       padding: 0;
-      height: 100%;
       font-family: Arial, sans-serif;
+      text-align: center;
     }
     #login, #protected {
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
+      padding: 20px;
     }
     input, button {
       margin: 6px;
@@ -26,8 +24,8 @@
       font-size: 16px;
     }
     #dataTable {
-      width: 90%;
-      max-width: 1000px;
+      width: 95%;
+      max-width: 1200px;
       border-collapse: collapse;
       margin-top: 20px;
     }
@@ -38,8 +36,7 @@
     }
     #loading {
       display: none;
-      font-size: 16px;
-      color: #555;
+      color: gray;
       margin-top: 10px;
     }
   </style>
@@ -54,9 +51,9 @@
   <p id="login-error" style="color:red;"></p>
 </div>
 
-<div id="protected" style="display: none; flex-direction: column;">
+<div id="protected" style="display: none;">
   <h2>Live Google Sheet Data</h2>
-  <div id="loading">🔄 Refreshing data...</div>
+  <div id="loading">🔄 Updating data...</div>
   <table id="dataTable"></table>
 </div>
 
@@ -67,46 +64,47 @@
     "planetimpex": "planet123"
   };
 
-  const SHEET_ID = '1f7A3F5bNfPkulNBAnsKFluE_V-a23PG0wME_g3jyxhw'; // ✅ your actual sheet ID
-  const API_KEY = 'AIzaSyB2xucSsbf-bR6fUOfVIxjjBsk4hNtESL0'; // ✅ your actual API key
-  const RANGE = 'BTC!A1:Z100'; // ✅ adjust to your actual sheet tab and range
+  const SHEET_ID = '1f7A3F5bNfPkulNBAnsKFluE_V-a23PG0wME_g3jyxhw';
+  const TAB_NAME = 'BTC'; // Make sure your sheet tab is named exactly 'BTC'
+  const API_KEY = 'AIzaSyB2xucSsbf-bR6fUOfVIxjjBsk4hNtESL0';
+  const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${TAB_NAME}?key=${API_KEY}`;
+
+  let lastValues = [];
 
   function fetchSheetData() {
-    const loading = document.getElementById("loading");
-    loading.style.display = "block";
+    document.getElementById("loading").style.display = "block";
 
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`;
-
-    fetch(url)
+    fetch(API_URL)
       .then(response => response.json())
       .then(data => {
         const values = data.values || [];
-        if (values.length === 0) return;
-
-        // Build new table in memory
-        const newTable = document.createElement("table");
-        newTable.id = "dataTable";
-
-        values.forEach((row, rowIndex) => {
-          const tr = document.createElement("tr");
-          row.forEach(cell => {
-            const td = document.createElement(rowIndex === 0 ? "th" : "td");
-            td.textContent = cell;
-            tr.appendChild(td);
-          });
-          newTable.appendChild(tr);
-        });
-
-        // Replace old table only after building new one
-        const oldTable = document.getElementById("dataTable");
-        oldTable.parentNode.replaceChild(newTable, oldTable);
+        if (JSON.stringify(values) !== JSON.stringify(lastValues)) {
+          updateTable(values);
+          lastValues = values;
+        }
       })
       .catch(err => {
         console.error("Error fetching sheet data:", err);
       })
       .finally(() => {
-        loading.style.display = "none";
+        document.getElementById("loading").style.display = "none";
       });
+  }
+
+  function updateTable(values) {
+    const table = document.getElementById("dataTable");
+    let html = '';
+
+    values.forEach((row, i) => {
+      html += `<tr>`;
+      row.forEach(cell => {
+        const tag = i === 0 ? 'th' : 'td';
+        html += `<${tag}>${cell}</${tag}>`;
+      });
+      html += `</tr>`;
+    });
+
+    table.innerHTML = html;
   }
 
   function checkLogin() {
@@ -123,9 +121,9 @@
 
   function showProtected() {
     document.getElementById("login").style.display = "none";
-    document.getElementById("protected").style.display = "flex";
-    fetchSheetData(); // Initial load
-    setInterval(fetchSheetData, 60000); // Refresh every 60 seconds
+    document.getElementById("protected").style.display = "block";
+    fetchSheetData(); // Load first time
+    setInterval(fetchSheetData, 10000); // Refresh every 10 seconds
   }
 
   window.onload = function () {
