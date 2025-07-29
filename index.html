@@ -34,9 +34,11 @@
     #bufferFrame {
       display: none;
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
+      visibility: hidden;
     }
   </style>
 </head>
@@ -68,10 +70,11 @@
     const mainFrame = document.getElementById("sheetFrame");
     const buffer = document.getElementById("bufferFrame");
 
-    buffer.src = baseSheetURL + '&t=' + new Date().getTime(); // new iframe source
+    const newSrc = baseSheetURL + '&t=' + new Date().getTime();
+    buffer.src = newSrc;
+
     buffer.onload = () => {
-      // Once loaded, swap content
-      mainFrame.src = buffer.src;
+      mainFrame.src = newSrc;
     };
   }
 
@@ -90,9 +93,12 @@
   function showProtected() {
     document.getElementById("login").style.display = "none";
     document.getElementById("protected").style.display = "block";
-    document.getElementById("sheetFrame").src = baseSheetURL;
 
-    setInterval(loadSheet, 60000); // auto refresh every 60s
+    const sheetFrame = document.getElementById("sheetFrame");
+    sheetFrame.src = baseSheetURL;
+
+    // Refresh every 60 seconds
+    setInterval(loadSheet, 60000);
   }
 
   window.onload = function () {
