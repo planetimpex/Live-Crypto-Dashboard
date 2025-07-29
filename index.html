@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Google Sheet Dashboard</title>
+  <title>Live Sheet Dashboard</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
+      overflow: hidden;
       font-family: Arial, sans-serif;
-      background: #f9f9f9;
     }
     #login, #protected {
       width: 100%;
       height: 100%;
+      box-sizing: border-box;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -33,8 +34,7 @@
     #bufferFrame {
       display: none;
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
     }
@@ -51,7 +51,7 @@
 </div>
 
 <div id="protected" style="display: none; position: relative;">
-  <iframe id="sheetFrame" src=""></iframe>
+  <iframe id="sheetFrame"></iframe>
   <iframe id="bufferFrame"></iframe>
 </div>
 
@@ -62,16 +62,15 @@
     "planetimpex": "planet123"
   };
 
-  // Replace with your published Sheet's embed link (make sure it is published to web!)
-  const baseSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?gid=0&single=true&widget=true&headers=false";
+  const baseSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false&chrome=false';
 
   function loadSheet() {
     const mainFrame = document.getElementById("sheetFrame");
     const buffer = document.getElementById("bufferFrame");
 
-    buffer.src = baseSheetURL + "&t=" + new Date().getTime(); // Add timestamp to avoid cache
-
+    buffer.src = baseSheetURL + '&t=' + new Date().getTime(); // new iframe source
     buffer.onload = () => {
+      // Once loaded, swap content
       mainFrame.src = buffer.src;
     };
   }
@@ -92,7 +91,8 @@
     document.getElementById("login").style.display = "none";
     document.getElementById("protected").style.display = "block";
     document.getElementById("sheetFrame").src = baseSheetURL;
-    setInterval(loadSheet, 20000); // Refresh every 20 seconds
+
+    setInterval(loadSheet, 60000); // auto refresh every 60s
   }
 
   window.onload = function () {
