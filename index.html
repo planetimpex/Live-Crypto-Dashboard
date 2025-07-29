@@ -3,47 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Sheet Dashboard</title>
+  <title>Live Google Sheet Dashboard</title>
   <style>
-    body {
+    html, body {
       margin: 0;
       padding: 0;
+      height: 100%;
       font-family: Arial, sans-serif;
-      text-align: center;
+      background: #f9f9f9;
     }
     #login, #protected {
+      width: 100%;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      padding: 20px;
+      align-items: center;
     }
     input, button {
       margin: 6px;
       padding: 10px;
       font-size: 16px;
     }
-    #dataTable {
-      width: 95%;
-      max-width: 1200px;
-      border-collapse: collapse;
-      margin-top: 20px;
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
     }
-    #dataTable th, #dataTable td {
-      border: 1px solid #ccc;
-      padding: 8px;
-      text-align: left;
-    }
-    #loading {
+    #bufferFrame {
       display: none;
-      color: gray;
-      margin-top: 10px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
   </style>
 </head>
 <body>
 
-<div id="login">
+<div id="login" style="display: none;">
   <h2>Client Login</h2>
   <input type="text" id="username" placeholder="Username" />
   <input type="password" id="password" placeholder="Password" />
@@ -51,10 +50,9 @@
   <p id="login-error" style="color:red;"></p>
 </div>
 
-<div id="protected" style="display: none;">
-  <h2>Live Google Sheet Data</h2>
-  <div id="loading">🔄 Updating data...</div>
-  <table id="dataTable"></table>
+<div id="protected" style="display: none; position: relative;">
+  <iframe id="sheetFrame" src=""></iframe>
+  <iframe id="bufferFrame"></iframe>
 </div>
 
 <script>
@@ -64,47 +62,18 @@
     "planetimpex": "planet123"
   };
 
-  const SHEET_ID = '1f7A3F5bNfPkulNBAnsKFluE_V-a23PG0wME_g3jyxhw';
-  const TAB_NAME = 'BTC'; // Make sure your sheet tab is named exactly 'BTC'
-  const API_KEY = 'AIzaSyB2xucSsbf-bR6fUOfVIxjjBsk4hNtESL0';
-  const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${TAB_NAME}?key=${API_KEY}`;
+  // Replace with your published Sheet's embed link (make sure it is published to web!)
+  const baseSheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?gid=0&single=true&widget=true&headers=false";
 
-  let lastValues = [];
+  function loadSheet() {
+    const mainFrame = document.getElementById("sheetFrame");
+    const buffer = document.getElementById("bufferFrame");
 
-  function fetchSheetData() {
-    document.getElementById("loading").style.display = "block";
+    buffer.src = baseSheetURL + "&t=" + new Date().getTime(); // Add timestamp to avoid cache
 
-    fetch(API_URL)
-      .then(response => response.json())
-      .then(data => {
-        const values = data.values || [];
-        if (JSON.stringify(values) !== JSON.stringify(lastValues)) {
-          updateTable(values);
-          lastValues = values;
-        }
-      })
-      .catch(err => {
-        console.error("Error fetching sheet data:", err);
-      })
-      .finally(() => {
-        document.getElementById("loading").style.display = "none";
-      });
-  }
-
-  function updateTable(values) {
-    const table = document.getElementById("dataTable");
-    let html = '';
-
-    values.forEach((row, i) => {
-      html += `<tr>`;
-      row.forEach(cell => {
-        const tag = i === 0 ? 'th' : 'td';
-        html += `<${tag}>${cell}</${tag}>`;
-      });
-      html += `</tr>`;
-    });
-
-    table.innerHTML = html;
+    buffer.onload = () => {
+      mainFrame.src = buffer.src;
+    };
   }
 
   function checkLogin() {
@@ -122,8 +91,8 @@
   function showProtected() {
     document.getElementById("login").style.display = "none";
     document.getElementById("protected").style.display = "block";
-    fetchSheetData(); // Load first time
-    setInterval(fetchSheetData, 10000); // Refresh every 10 seconds
+    document.getElementById("sheetFrame").src = baseSheetURL;
+    setInterval(loadSheet, 20000); // Refresh every 20 seconds
   }
 
   window.onload = function () {
