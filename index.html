@@ -1,52 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Live Sheet Dashboard</title>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
-    #login, #protected {
-      width: 100%;
-      height: 100%;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    input, button {
-      margin: 6px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
-</head>
-<body>
-
-<div id="login" style="display: none;">
-  <h2>Client Login</h2>
-  <input type="text" id="username" placeholder="Username" />
-  <input type="password" id="password" placeholder="Password" />
-  <button onclick="checkLogin()">Login</button>
-  <p id="login-error" style="color:red;"></p>
-</div>
-
-<div id="protected" style="display: none;">
-  <iframe id="sheetFrame"></iframe>
-</div>
-
 <script>
   const USERS = {
     "client1": "indian123",
@@ -55,6 +6,8 @@
   };
 
   const baseSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR1a3OFd1Xh5WebntRT3Y8kUX7H8TtkwlzoWqF8W4trBr5Rkd3rADcJZDOI6c0w9mAgvplBHlhOfZR1/pubhtml?widget=true&headers=false&chrome=false';
+
+  const MAINTENANCE_MODE = true; // change to false when ready
 
   function loadSheet() {
     const iframe = document.getElementById("sheetFrame");
@@ -76,8 +29,12 @@
   function showProtected() {
     document.getElementById("login").style.display = "none";
     document.getElementById("protected").style.display = "block";
-    loadSheet(); // initial load
-    setInterval(loadSheet, 60000); // auto refresh every 60s
+    if (!MAINTENANCE_MODE) {
+      loadSheet(); // initial load
+      setInterval(loadSheet, 60000); // auto refresh every 60s
+    } else {
+      document.getElementById("sheetFrame").srcdoc = "<h2 style='text-align:center;margin-top:50px;'>Dashboard is under maintenance</h2>";
+    }
   }
 
   window.onload = function () {
@@ -88,6 +45,3 @@
     }
   };
 </script>
-
-</body>
-</html>
