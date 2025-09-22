@@ -61,6 +61,9 @@
 </div>
 
 <script>
+  // 🔑 Update this version number whenever you change USERS list
+  const LOGIN_VERSION = "v2";  
+
   const USERS = {
     "client3": "indian1234",
     "client4": "indian1234",
@@ -90,6 +93,7 @@
     if (USERS[user] === pass) {
       localStorage.setItem("loggedIn", "yes");
       localStorage.setItem("user", user);
+      localStorage.setItem("loginVersion", LOGIN_VERSION); // save version
       showProtected();
     } else {
       document.getElementById("login-error").innerText = "Invalid login";
@@ -104,9 +108,14 @@
   }
 
   window.onload = function () {
-    if (localStorage.getItem("loggedIn") === "yes") {
+    const loggedIn = localStorage.getItem("loggedIn");
+    const savedVersion = localStorage.getItem("loginVersion");
+
+    // ✅ Allow only if version matches current LOGIN_VERSION
+    if (loggedIn === "yes" && savedVersion === LOGIN_VERSION) {
       showProtected();
     } else {
+      localStorage.clear(); // clear old sessions
       document.getElementById("login").style.display = "flex";
     }
   };
@@ -114,4 +123,3 @@
 
 </body>
 </html>
-
