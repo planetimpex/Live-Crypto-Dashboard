@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Live Sheet Dashboard</title>
 
@@ -12,14 +12,15 @@
 html,body{
 margin:0;
 padding:0;
+width:100%;
 height:100%;
-overflow:hidden;
 font-family:Arial;
+overflow:hidden;
 }
 
 #login,#protected{
-width:100vw;
-height:100vh;
+width:100%;
+height:100%;
 display:flex;
 justify-content:center;
 align-items:center;
@@ -37,26 +38,16 @@ position:relative;
 overflow:hidden;
 }
 
-/* container */
-#frameWrap{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-display:flex;
-justify-content:center;
-align-items:center;
-overflow:hidden;
-}
+/* FULL SCREEN SHEET */
 
-/* iframe */
 iframe{
+width:100vw;
+height:100vh;
 border:none;
-transform-origin:top left;
 }
 
-/* loading */
+/* LOADING */
+
 #loading{
 position:absolute;
 width:100%;
@@ -84,11 +75,7 @@ font-size:20px;
 
 <div id="protected" style="display:none;">
 <div id="loading">Loading dashboard...</div>
-
-<div id="frameWrap">
 <iframe id="sheetFrame"></iframe>
-</div>
-
 </div>
 
 <script>
@@ -117,33 +104,11 @@ const ni=iframe.cloneNode();
 ni.id="sheetFrame";
 
 ni.onload=()=>{
-fitFrame();
 document.getElementById("loading").style.display="none";
 };
 
 ni.src=baseSheetURL+"&t="+Date.now();
 iframe.parentNode.replaceChild(ni,iframe);
-}
-
-/* PERFECT AUTO FIT */
-
-function fitFrame(){
-
-const iframe=document.getElementById("sheetFrame");
-
-/* REAL dashboard size guess (large so everything fits) */
-const sheetW=3000;
-const sheetH=2000;
-
-iframe.style.width=sheetW+"px";
-iframe.style.height=sheetH+"px";
-
-const sw=window.innerWidth;
-const sh=window.innerHeight;
-
-const scale=Math.min(sw/sheetW,sh/sheetH);
-
-iframe.style.transform=`scale(${scale})`;
 }
 
 /* LOGIN */
@@ -157,7 +122,6 @@ if(USERS[u]===p){
 
 localStorage.setItem("loggedIn","yes");
 localStorage.setItem("loginVersion",LOGIN_VERSION);
-
 showProtected();
 
 }else{
@@ -176,7 +140,7 @@ loadSheet();
 setInterval(loadSheet,60000);
 }
 
-/* AUTO */
+/* AUTO LOGIN */
 
 window.onload=()=>{
 
@@ -190,10 +154,6 @@ localStorage.clear();
 login.style.display="flex";
 }
 };
-
-/* RESIZE FIX */
-
-window.addEventListener("resize",()=>setTimeout(fitFrame,300));
 
 </script>
 
